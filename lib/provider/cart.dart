@@ -7,10 +7,10 @@ class Cart {
   final int quantity;
 
   Cart(
-      {@required this.id,
-      @required this.title,
-      @required this.price,
-      @required this.quantity});
+      {required this.id,
+      required this.title,
+      required this.price,
+      required this.quantity});
 }
 
 class CartN with ChangeNotifier {
@@ -49,7 +49,7 @@ class CartN with ChangeNotifier {
     if (!_cartItems.containsKey(pId)) {
       return;
     }
-    if (_cartItems[pId].quantity > 1) {
+    if (_cartItems[pId]!.quantity > 1) {
       _cartItems.update(
           pId,
           (existingProduct) => Cart(

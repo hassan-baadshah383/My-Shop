@@ -21,9 +21,9 @@ class _OrderScreenState extends State<OrderScreen> {
     setState(() {
       _isLoading = true;
     });
-    final authData = Provider.of<Auth>(context, listen: false);
+    final Auth authData = Provider.of<Auth>(context, listen: false);
     Provider.of<OrderN>(context, listen: false)
-        .fetchData(authData.userId)
+        .fetchData(authData.userId!)
         .then((_) {
       setState(() {
         _isLoading = false;

@@ -12,10 +12,10 @@ class Order {
   final DateTime date;
 
   Order(
-      {@required this.id,
-      @required this.price,
-      @required this.products,
-      @required this.date});
+      {required this.id,
+      required this.price,
+      required this.products,
+      required this.date});
 }
 
 class OrderN with ChangeNotifier {
@@ -29,28 +29,27 @@ class OrderN with ChangeNotifier {
     final url =
         'https://my-shop-8ed5f-default-rtdb.firebaseio.com/orders/$userId.json';
     final responce = await https.get(Uri.parse(url));
-    final extractedData = json.decode(responce.body) as Map<String, dynamic>;
+    final extractedData = json.decode(responce.body);
     final List<Order> loadedOrders = [];
-    print(extractedData);
-    if (extractedData == null) {
-      return;
+    if (extractedData != null && extractedData is Map<String, dynamic>) {
+      extractedData.forEach((orderId, orderData) {
+        loadedOrders.add(Order(
+            id: orderId,
+            date: DateTime.parse(orderData['date']),
+            price: orderData['price'],
+            products: (orderData['cartItems'] as List<dynamic>)
+                .map((items) => Cart(
+                      id: items['id'],
+                      price: items['price'],
+                      quantity: items['quantity'],
+                      title: items['title'],
+                    ))
+                .toList()));
+      });
+      _orderList = loadedOrders.reversed.toList();
+      notifyListeners();
     }
-    extractedData.forEach((orderId, orderData) {
-      loadedOrders.add(Order(
-          id: orderId,
-          date: DateTime.parse(orderData['date']),
-          price: orderData['price'],
-          products: (orderData['cartItems'] as List<dynamic>)
-              .map((items) => Cart(
-                    id: items['id'],
-                    price: items['price'],
-                    quantity: items['quantity'],
-                    title: items['title'],
-                  ))
-              .toList()));
-    });
-    _orderList = loadedOrders.reversed.toList();
-    notifyListeners();
+    return;
   }
 
   Future<void> addOrder(

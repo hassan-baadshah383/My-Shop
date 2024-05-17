@@ -6,7 +6,7 @@ class ProductDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final routeArgs =
-        ModalRoute.of(context).settings.arguments as Map<String, Object>;
+        ModalRoute.of(context)!.settings.arguments as Map<String, Object>;
     final routeId = routeArgs['id'];
     final routeDescription = routeArgs['description'];
     final routeImage = routeArgs['image'];
@@ -16,12 +16,16 @@ class ProductDetailScreen extends StatelessWidget {
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
+            backgroundColor: Colors.blue,
             expandedHeight: 300,
             pinned: true,
             flexibleSpace: FlexibleSpaceBar(
-              title: Text(routeTitle as String),
+              title: Text(
+                routeTitle as String,
+                style: const TextStyle(color: Colors.white),
+              ),
               background: Hero(
-                  tag: routeId,
+                  tag: routeId!,
                   child:
                       Image.network(routeImage.toString(), fit: BoxFit.cover)),
             ),

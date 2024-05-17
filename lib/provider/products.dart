@@ -19,34 +19,31 @@ class Products with ChangeNotifier {
         'https://my-shop-8ed5f-default-rtdb.firebaseio.com/products.json?$filterString');
     try {
       final response = await https.get(url);
-      final extractedData = json.decode(response.body) as Map<String, dynamic>;
-      if (extractedData == null) {
-        return;
+      final extractedData = json.decode(response.body);
+      print("$extractedData extractedData");
+      if (extractedData != null && extractedData is Map<String, dynamic>) {
+        url = Uri.parse(
+            'https://my-shop-8ed5f-default-rtdb.firebaseio.com/userFavourites/$userId.json');
+        final favoriteResponse = await https.get(url);
+        final favoriteData =
+            json.decode(favoriteResponse.body) as Map<String, dynamic>;
+        final List<Product> loadedProducts = [];
+        extractedData.forEach((prodId, prodData) {
+          loadedProducts.add(Product(
+            id: prodId,
+            title: prodData['title'],
+            description: prodData['description'],
+            price: prodData['price'],
+            isFavourite: favoriteData[prodId]?['isFavourite'] ?? false,
+            imageUrl: prodData['imageUrl'],
+          ));
+        });
+        _item = loadedProducts;
+        notifyListeners();
       }
-      url = Uri.parse(
-          'https://my-shop-8ed5f-default-rtdb.firebaseio.com/userFavourites/$userId.json');
-      final favoriteResponse = await https.get(url);
-      final favoriteData =
-          json.decode(favoriteResponse.body) as Map<String, dynamic>;
-      final List<Product> loadedProducts = [];
-      extractedData.forEach((prodId, prodData) {
-        loadedProducts.add(Product(
-          id: prodId,
-          title: prodData['title'],
-          description: prodData['description'],
-          price: prodData['price'],
-          isFavourite: favoriteData == null
-              ? false
-              : favoriteData[prodId] == null
-                  ? false
-                  : favoriteData[prodId]['isFavourite'],
-          imageUrl: prodData['imageUrl'],
-        ));
-      });
-      _item = loadedProducts;
-      notifyListeners();
+      return;
     } catch (error) {
-      throw (error);
+      print(error);
     }
   }
 
@@ -64,6 +61,7 @@ class Products with ChangeNotifier {
             'imageUrl': product.imageUrl,
             'creatorId': userId,
           }));
+      print("${responce.body} Responce after adding product");
       await https.post(Uri.parse(favUrl),
           body: json.encode({
             'isFavourite': product.isFavourite,
@@ -99,7 +97,6 @@ class Products with ChangeNotifier {
       _item.insert(existingIndex, existingProduct);
       throw HttpExceptions('Could not delete product');
     }
-    existingProduct = null;
   }
 
   Future<void> updateProduct(Product product, String id) async {

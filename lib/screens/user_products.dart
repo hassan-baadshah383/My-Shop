@@ -12,9 +12,12 @@ class UserProducts extends StatelessWidget {
 
   Future<void> _refreshProducts(BuildContext context) async {
     final authtData = Provider.of<Auth>(context, listen: false);
+    print("${authtData.userId} USER ID");
     //final prodData = Provider.of<Product>(context, listen: false);
-    await Provider.of<Products>(context, listen: false)
-        .fetchData(authtData.userId, true);
+    if (authtData.userId != null) {
+      await Provider.of<Products>(context, listen: false)
+          .fetchData(authtData.userId!, true);
+    }
   }
 
   @override
@@ -31,31 +34,38 @@ class UserProducts extends StatelessWidget {
       drawer: AppDrawer(),
       body: FutureBuilder(
         future: _refreshProducts(context),
-        builder: (context, snapshot) =>
-            snapshot.connectionState == ConnectionState.waiting
-                ? const Center(
-                    child: CircularProgressIndicator(),
-                  )
-                : RefreshIndicator(
-                    backgroundColor: Colors.purple,
-                    onRefresh: () => _refreshProducts(context),
-                    child: Consumer<Products>(
-                        builder: ((context, productData, _) => ListView.builder(
-                              itemBuilder: ((context, index) {
-                                return Column(
-                                  children: [
-                                    UserProductsItem(
-                                      productData.item[index].id,
-                                      productData.item[index].title,
-                                      productData.item[index].imageUrl,
-                                    ),
-                                    const Divider(),
-                                  ],
-                                );
-                              }),
-                              itemCount: productData.item.length,
-                            ))),
-                  ),
+        builder: (context, snapshot) => snapshot.connectionState ==
+                ConnectionState.waiting
+            ? const Center(
+                child: CircularProgressIndicator(),
+              )
+            : RefreshIndicator(
+                backgroundColor: Colors.purple,
+                onRefresh: () => _refreshProducts(context),
+                child: Consumer<Products>(builder: ((context, productData, _) {
+                  if (productData.item.isEmpty) {
+                    return const Center(
+                      child: Text('No any product. Add some!'),
+                    );
+                  } else {
+                    return ListView.builder(
+                      itemBuilder: ((context, index) {
+                        return Column(
+                          children: [
+                            UserProductsItem(
+                              productData.item[index].id,
+                              productData.item[index].title,
+                              productData.item[index].imageUrl,
+                            ),
+                            const Divider(),
+                          ],
+                        );
+                      }),
+                      itemCount: productData.item.length,
+                    );
+                  }
+                })),
+              ),
       ),
     );
   }

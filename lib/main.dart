@@ -22,7 +22,13 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
         providers: [
-          ChangeNotifierProvider(create: ((context) => Product())),
+          ChangeNotifierProvider(
+              create: ((context) => Product(
+                  id: '',
+                  description: '',
+                  imageUrl: '',
+                  price: 0.0,
+                  title: ''))),
           ChangeNotifierProvider(
             create: (context) => Auth(),
           ),
@@ -36,6 +42,21 @@ class MyApp extends StatelessWidget {
         ],
         child: Consumer<Auth>(
           builder: (context, auth, _) => MaterialApp(
+            debugShowCheckedModeBanner: false,
+            theme: ThemeData(
+              appBarTheme: const AppBarTheme(
+                titleTextStyle: TextStyle(color: Colors.white),
+                backgroundColor: Colors.blue,
+                iconTheme: IconThemeData(
+                  color: Colors.white,
+                ),
+              ),
+              elevatedButtonTheme: ElevatedButtonThemeData(
+                  style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                foregroundColor: Colors.white,
+              )),
+            ),
             title: 'My Shop',
             home: auth.isAuth
                 ? ProductOverviewScreen()

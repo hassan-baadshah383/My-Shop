@@ -60,7 +60,7 @@ class _CartScreenState extends State<CartScreen> {
                             await orderData.addOrder(
                                 cartData.cartItems.values.toList(),
                                 cartData.totalSum,
-                                authData.userId);
+                                authData.userId.toString());
                             setState(() {
                               _isloading = false;
                             });

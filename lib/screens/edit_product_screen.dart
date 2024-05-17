@@ -18,8 +18,8 @@ class _EditProductScreenState extends State<EditProductScreen> {
   final _imageUrlFocus = FocusNode();
   final _imageController = TextEditingController();
   final _form = GlobalKey<FormState>();
-  var product =
-      Product(id: null, title: '', description: '', price: 0, imageUrl: '');
+  Product product =
+      Product(id: '', title: '', description: '', price: 0, imageUrl: '');
   bool edit = true;
   bool _isLoading = false;
   var existingProduct = {
@@ -39,8 +39,8 @@ class _EditProductScreenState extends State<EditProductScreen> {
   @override
   void didChangeDependencies() {
     if (edit) {
-      final productId = ModalRoute.of(context).settings.arguments as String;
-      if (productId != null) {
+      final productId = ModalRoute.of(context)!.settings.arguments;
+      if (productId != null && productId is String) {
         product = Provider.of<Products>(context, listen: false)
             .findProduct(productId);
         existingProduct = {
@@ -82,15 +82,15 @@ class _EditProductScreenState extends State<EditProductScreen> {
   }
 
   Future<void> _submitForm() async {
-    final validate = _form.currentState.validate();
+    final validate = _form.currentState!.validate();
     if (!validate) {
       return;
     }
-    _form.currentState.save();
+    _form.currentState!.save();
     setState(() {
       _isLoading = true;
     });
-    if (product.id != null) {
+    if (product.id.isNotEmpty) {
       Provider.of<Products>(context, listen: false)
           .updateProduct(product, product.id);
       setState(() {
@@ -100,9 +100,11 @@ class _EditProductScreenState extends State<EditProductScreen> {
     } else {
       try {
         final userId = Provider.of<Auth>(context, listen: false).userId;
+        print(product);
+        print(userId);
         await Provider.of<Products>(context, listen: false).addProduct(
           product,
-          userId,
+          userId!,
         );
       } catch (error) {
         await showDialog(
@@ -158,7 +160,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
                             labelText: 'Title',
                           ),
                           validator: (value) {
-                            if (value.isEmpty) {
+                            if (value!.isEmpty) {
                               return 'Please enter a title';
                             }
                             return null;
@@ -186,7 +188,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
                             labelText: 'Price',
                           ),
                           validator: (value) {
-                            if (value.isEmpty) {
+                            if (value!.isEmpty) {
                               return 'Please enter a price';
                             }
                             if (double.tryParse(value) == null) {
@@ -202,7 +204,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
                                 id: product.id,
                                 title: product.title,
                                 description: product.description,
-                                price: double.parse(newValue),
+                                price: double.parse(newValue!),
                                 imageUrl: product.imageUrl);
                           }),
                         ),
@@ -216,7 +218,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
                             labelText: 'Description',
                           ),
                           validator: (value) {
-                            if (value.isEmpty) {
+                            if (value!.isEmpty) {
                               return 'Please enter a description';
                             }
                             if (value.length < 10) {
@@ -279,7 +281,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
                                   setState(() {});
                                 },
                                 validator: (value) {
-                                  if (value.isEmpty) {
+                                  if (value!.isEmpty) {
                                     return 'Please enter a URL';
                                   }
                                   if (!value.startsWith('http') &&

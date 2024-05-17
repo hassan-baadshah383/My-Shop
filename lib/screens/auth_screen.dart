@@ -60,7 +60,7 @@ class AuthenticationScreen extends StatelessWidget {
             ),
             Flexible(
               flex: deviceSize.width > 600 ? 2 : 1,
-              child: const AuthCard(),
+              child: AuthCard(),
             )
           ]),
         )
@@ -71,7 +71,7 @@ class AuthenticationScreen extends StatelessWidget {
 
 class AuthCard extends StatefulWidget {
   const AuthCard({
-    Key key,
+    Key? key,
   }) : super(key: key);
 
   @override
@@ -88,19 +88,19 @@ class _AuthCardState extends State<AuthCard>
   };
   var _isLoading = false;
   final _passwordController = TextEditingController();
-  AnimationController _controller;
-  Animation<double> _opacityAnimation;
-  Animation<Offset> _offSetAnimation;
+  AnimationController? _controller;
+  Animation<double>? _opacityAnimation;
+  Animation<Offset>? _offSetAnimation;
 
   @override
   void initState() {
     _controller = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 400));
     _opacityAnimation = Tween(begin: 0.0, end: 1.0)
-        .animate(CurvedAnimation(parent: _controller, curve: Curves.easeIn));
+        .animate(CurvedAnimation(parent: _controller!, curve: Curves.easeIn));
     _offSetAnimation = Tween<Offset>(
             begin: const Offset(0, 0), end: const Offset(0, 0))
-        .animate(CurvedAnimation(parent: _controller, curve: Curves.easeIn));
+        .animate(CurvedAnimation(parent: _controller!, curve: Curves.easeIn));
     super.initState();
   }
 
@@ -120,20 +120,20 @@ class _AuthCardState extends State<AuthCard>
   }
 
   Future<void> _submit() async {
-    if (!_formKey.currentState.validate()) {
+    if (!_formKey.currentState!.validate()) {
       return;
     }
-    _formKey.currentState.save();
+    _formKey.currentState!.save();
     setState(() {
       _isLoading = true;
     });
     try {
       if (_authMode == AuthMode.Login) {
         await Provider.of<Auth>(context, listen: false)
-            .loginUser(_authData['email'], _authData['password']);
+            .loginUser(_authData['email']!, _authData['password']!);
       } else {
         await Provider.of<Auth>(context, listen: false)
-            .signUpUser(_authData['email'], _authData['password']);
+            .signUpUser(_authData['email']!, _authData['password']!);
       }
     } on HttpExceptions catch (error) {
       var message = 'Something went wrong!';
@@ -162,12 +162,12 @@ class _AuthCardState extends State<AuthCard>
       setState(() {
         _authMode = AuthMode.Signup;
       });
-      _controller.forward();
+      _controller!.forward();
     } else {
       setState(() {
         _authMode = AuthMode.Login;
       });
-      _controller.reverse();
+      _controller!.reverse();
     }
   }
 
@@ -196,28 +196,32 @@ class _AuthCardState extends State<AuthCard>
                   TextFormField(
                     decoration: const InputDecoration(labelText: 'E-Mail'),
                     keyboardType: TextInputType.emailAddress,
+                    textInputAction: TextInputAction.next,
                     validator: (value) {
-                      if (value.isEmpty || !value.contains('@')) {
+                      if (value!.isEmpty || !value.contains('@')) {
                         return 'Invalid email!';
                       }
                       return null;
                     },
                     onSaved: (value) {
-                      _authData['email'] = value;
+                      _authData['email'] = value!;
                     },
                   ),
                   TextFormField(
                     decoration: const InputDecoration(labelText: 'Password'),
                     obscureText: true,
                     controller: _passwordController,
+                    textInputAction: _authMode == AuthMode.Login
+                        ? TextInputAction.done
+                        : TextInputAction.next,
                     validator: (value) {
-                      if (value.isEmpty || value.length < 5) {
+                      if (value!.isEmpty || value.length < 5) {
                         return 'Password is too short!';
                       }
                       return null;
                     },
                     onSaved: (value) {
-                      _authData['password'] = value;
+                      _authData['password'] = value!;
                     },
                   ),
                   //if (_authMode == AuthMode.Signup)
@@ -228,11 +232,12 @@ class _AuthCardState extends State<AuthCard>
                         maxHeight: _authMode == AuthMode.Signup ? 120 : 0),
                     curve: Curves.easeIn,
                     child: FadeTransition(
-                      opacity: _opacityAnimation,
+                      opacity: _opacityAnimation!,
                       child: SlideTransition(
-                        position: _offSetAnimation,
+                        position: _offSetAnimation!,
                         child: TextFormField(
                           enabled: _authMode == AuthMode.Signup,
+                          textInputAction: TextInputAction.done,
                           decoration: const InputDecoration(
                               labelText: 'Confirm Password'),
                           obscureText: true,
@@ -266,7 +271,8 @@ class _AuthCardState extends State<AuthCard>
                           ),
                         ),
                         child: Text(
-                            _authMode == AuthMode.Login ? 'LOGIN' : 'SIGN UP'),
+                          _authMode == AuthMode.Login ? 'LOGIN' : 'SIGN UP',
+                        ),
                       ),
                     ),
                   Padding(
@@ -276,7 +282,6 @@ class _AuthCardState extends State<AuthCard>
                       onPressed: _switchAuthMode,
                       child: Text(
                         '${_authMode == AuthMode.Login ? 'SIGNUP' : 'LOGIN'} INSTEAD',
-                        style: const TextStyle(color: Colors.purple),
                       ),
                     ),
                   ),

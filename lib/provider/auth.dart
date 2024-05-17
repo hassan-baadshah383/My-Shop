@@ -8,18 +8,18 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/exceptions.dart';
 
 class Auth with ChangeNotifier {
-  String tokken;
-  DateTime expiryDate;
-  String userId;
-  Timer authTime;
+  String? tokken;
+  DateTime? expiryDate;
+  String? userId;
+  Timer? authTime;
 
   bool get isAuth {
     return token != null;
   }
 
-  String get token {
+  String? get token {
     if (expiryDate != null &&
-        expiryDate.isAfter(DateTime.now()) &&
+        expiryDate!.isAfter(DateTime.now()) &&
         tokken != null) {
       return tokken;
     }
@@ -50,7 +50,7 @@ class Auth with ChangeNotifier {
       final userData = json.encode({
         'tokken': tokken,
         'userId': userId,
-        'expiryDate': expiryDate.toIso8601String()
+        'expiryDate': expiryDate!.toIso8601String()
       });
       pref.setString('userData', userData);
     } catch (error) {
@@ -84,7 +84,7 @@ class Auth with ChangeNotifier {
       final userData = json.encode({
         'tokken': tokken,
         'userId': userId,
-        'expiryDate': expiryDate.toIso8601String()
+        'expiryDate': expiryDate!.toIso8601String()
       });
       pref.setString('userData', userData);
     } catch (error) {
@@ -97,7 +97,7 @@ class Auth with ChangeNotifier {
     expiryDate = null;
     userId = null;
     if (authTime != null) {
-      authTime.cancel();
+      authTime!.cancel();
       authTime = null;
     }
     notifyListeners();
@@ -107,9 +107,9 @@ class Auth with ChangeNotifier {
 
   void loginTimer() {
     if (authTime != null) {
-      authTime.cancel();
+      authTime!.cancel();
     }
-    final remainingTime = expiryDate.difference(DateTime.now()).inSeconds;
+    final remainingTime = expiryDate!.difference(DateTime.now()).inSeconds;
     authTime = Timer(Duration(seconds: remainingTime), (() => logout()));
   }
 
@@ -118,14 +118,15 @@ class Auth with ChangeNotifier {
     if (!pref.containsKey('userData')) {
       return false;
     }
-    final userData =
-        json.decode(pref.getString('userData')) as Map<String, Object>;
-    if (DateTime.parse(userData['expiryDate']).isBefore(DateTime.now())) {
+    final userData = json.decode(pref.getString('userData').toString())
+        as Map<String, Object>;
+    if (DateTime.parse(userData['expiryDate'].toString())
+        .isBefore(DateTime.now())) {
       return false;
     }
-    tokken = userData['tokken'];
-    expiryDate = DateTime.parse(userData['expiryDate']);
-    userId = userData['userId'];
+    tokken = userData['tokken'].toString();
+    expiryDate = DateTime.parse(userData['expiryDate'].toString());
+    userId = userData['userId'].toString();
     notifyListeners();
     loginTimer();
     return true;

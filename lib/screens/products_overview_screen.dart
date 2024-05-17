@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:my_shop/provider/auth.dart';
+import 'package:my_shop/provider/product.dart';
 import 'package:provider/provider.dart';
 import '../screens/cart_screen.dart';
 import '../widgets/products_grid.dart';
@@ -20,6 +21,8 @@ enum MenuButtons {
 class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
   bool _isLoading = false;
   var _isInit = true;
+  List<Product> fetchedProducts = [];
+
   @override
   void didChangeDependencies() {
     if (_isInit) {
@@ -27,9 +30,13 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
         _isLoading = true;
       });
       final authData = Provider.of<Auth>(context, listen: false);
-      Provider.of<Products>(context).fetchData(authData.userId).then((_) {
-        _isLoading = false;
+      Provider.of<Products>(context).fetchData(authData.userId!).then((_) {
+        fetchedProducts = Provider.of<Products>(context, listen: false).item;
+        setState(() {
+          _isLoading = false;
+        });
       });
+
       super.didChangeDependencies();
     }
     _isInit = false;
@@ -41,6 +48,7 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('My Shop'),
+        backgroundColor: Colors.blue,
         actions: [
           IconButton(
             icon: const Icon(Icons.shopping_cart),
@@ -71,7 +79,11 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
           ? const Center(
               child: CircularProgressIndicator(),
             )
-          : ProductGrid(isFav),
+          : fetchedProducts.isEmpty
+              ? const Center(
+                  child: Text('No any item yet. Add some!'),
+                )
+              : ProductGrid(isFav),
       drawer: AppDrawer(),
     );
   }

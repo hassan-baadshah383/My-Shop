@@ -11,8 +11,13 @@ class ProductGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final productData = Provider.of<Products>(context);
+    final productData = Provider.of<Products>(context, listen: false);
     final products = isFav ? productData.favItems : productData.item;
+    // if (products.isEmpty) {
+    //   return const Center(
+    //     child: Text('No any item yet. Add some!'),
+    //   );
+    // } else {
     return GridView.builder(
       itemCount: products.length,
       itemBuilder: (context, index) => ChangeNotifierProvider.value(
@@ -32,3 +37,4 @@ class ProductGrid extends StatelessWidget {
     );
   }
 }
+// }
